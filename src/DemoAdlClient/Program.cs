@@ -72,7 +72,7 @@ namespace DemoAdlClient
             {
                 foreach (var job in page)
                 {
-                    Console.WriteLine("ENUM1: {0}", item_count);
+                    Console.WriteLine("ENUM2: {0}", item_count);
                     item_count++;
 
                     if (item_count > 1000)
@@ -92,7 +92,7 @@ namespace DemoAdlClient
                 }
             }
             sw.Stop();
-            Console.WriteLine("ENUM1 TOTAL TIME: {0}", sw.Elapsed.TotalSeconds);
+            Console.WriteLine("ENUM2 TOTAL TIME: {0}", sw.Elapsed.TotalSeconds);
         }
 
         private static void OldMain(string[] args)
