@@ -2,12 +2,100 @@
 using System.Collections.Generic;
 using System.Linq;
 using MSADLA = Microsoft.Azure.Management.DataLake.Analytics;
+using Microsoft.Azure.Management.DataLake.Analytics;
 
 namespace DemoAdlClient
 {
     class Program
     {
         private static void Main(string[] args)
+        {
+            // Setup authentication for this demo
+            var auth = new AdlClient.Authentication("microsoft.onmicrosoft.com"); // change this to YOUR tenant
+            auth.Authenticate();
+
+            // Collect info about the Azure resources needed for this demo
+            string subid = "045c28ea-c686-462f-9081-33c34e871ba3";
+            string rg = "InsightServices";
+            string adla_account = "datainsightsadhoc";
+            string adls_account = "datainsightsadhoc";
+
+            // Create the clients
+            var az = new AdlClient.AzureClient(auth);
+            var adla = az.Analytics.ConnectToAccount(subid, rg, adla_account);
+            var adls = az.Store.ConnectToAccount(subid, rg, adls_account);
+
+
+            var jobclient = adla.RestClients._JobRest.RestClient; // get the generated rest client
+
+            EnumJobs1(jobclient, adla_account);
+            EnumJobs2(jobclient, adla_account);
+        }
+
+        private static void EnumJobs1(DataLakeAnalyticsJobManagementClient jobclient, string adla_account)
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+
+            string opt_select = null;
+            bool? opt_count = null;
+
+            int item_count = 0;
+            sw.Start();
+            var jobs = jobclient.Job.List(adla_account, null, opt_select, opt_count);
+            foreach (var job in jobs)
+            {
+                Console.WriteLine("ENUM1: {0}", item_count);
+                item_count++;
+
+                if (item_count > 1000)
+                {
+                    break;
+                }
+            }
+            sw.Stop();
+            Console.WriteLine("ENUM1 TOTAL TIME: {0}", sw.Elapsed.TotalSeconds);
+        }
+
+        private static void EnumJobs2(DataLakeAnalyticsJobManagementClient jobclient, string adla_account)
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+
+            string opt_select = null;
+            bool? opt_count = null;
+
+            int item_count = 0;
+            sw.Start();
+            
+            var page= jobclient.Job.List(adla_account, null, opt_select, opt_count);
+
+            while (true)
+            {
+                foreach (var job in page)
+                {
+                    Console.WriteLine("ENUM1: {0}", item_count);
+                    item_count++;
+
+                    if (item_count > 1000)
+                    {
+                        break;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(page.NextPageLink))
+                {
+                    page = jobclient.Job.ListNext(page.NextPageLink);
+                }
+
+                if (item_count > 1000)
+                {
+                    break;
+                }
+            }
+            sw.Stop();
+            Console.WriteLine("ENUM1 TOTAL TIME: {0}", sw.Elapsed.TotalSeconds);
+        }
+
+        private static void OldMain(string[] args)
         {
             // Setup authentication for this demo
             var auth = new AdlClient.Authentication("microsoft.onmicrosoft.com"); // change this to YOUR tenant
